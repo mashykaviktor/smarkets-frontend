@@ -1,7 +1,9 @@
+import { HomeFeed } from "@/features/home/components/HomeFeed";
+
 export default function Home() {
   return (
-    <main className="flex flex-1 items-center justify-center p-8">
-      <p className="text-sm text-zinc-500">Homepage — implementation pending.</p>
+    <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6">
+      <HomeFeed />
     </main>
   );
 }
