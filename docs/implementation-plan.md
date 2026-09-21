@@ -16,7 +16,7 @@ cookie `secure` flag).
 | 1 | Server layer (`client.ts`, `endpoints.ts`, errors) | ☑ done |
 | 2 | Domain + adapters + tests ⭐ protected | ☑ done |
 | 3 | Homepage | ☑ done |
-| 4 | Event page | ☐ not started |
+| 4 | Event page | ☑ done |
 | 5 | Price refresh | ☐ not started |
 | 6 | Auth ⭐ protected (P0) | ☐ not started |
 | 7 | Polish pass ⭐ protected | ☐ not started |
