@@ -13,7 +13,7 @@ cookie `secure` flag).
 | # | Block | State |
 |---|---|---|
 | 0 | Scaffold (Next.js + TS + Tailwind + TanStack Query + Vitest) | ☑ done |
-| 1 | Server layer (`client.ts`, `endpoints.ts`, errors) | ☐ not started |
+| 1 | Server layer (`client.ts`, `endpoints.ts`, errors) | ☑ done |
 | 2 | Domain + adapters + tests ⭐ protected | ☐ not started |
 | 3 | Homepage | ☐ not started |
 | 4 | Event page | ☐ not started |
