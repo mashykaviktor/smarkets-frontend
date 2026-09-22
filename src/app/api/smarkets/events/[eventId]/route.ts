@@ -6,6 +6,7 @@ import {
   fetchQuotesForMarkets,
 } from "@/server/smarkets/endpoints";
 import { isSmarketsApiError } from "@/server/smarkets/errors";
+import { getSessionToken } from "@/server/smarkets/session";
 import type { SmarketsContract } from "@/server/smarkets/types";
 import { toEvent } from "@/features/events/adapters";
 import type { EventPageResponse } from "@/features/events/types";
@@ -25,15 +26,16 @@ export async function GET(_request: Request, { params }: RouteParams) {
   const { eventId } = await params;
 
   try {
-    const [event] = await fetchEventsByIds([eventId]);
+    const token = await getSessionToken();
+    const [event] = await fetchEventsByIds([eventId], { token });
     if (!event) {
       return NextResponse.json({ error: "EVENT_NOT_FOUND" }, { status: 404 });
     }
 
-    const rawMarkets = await fetchMarketsForEvents([eventId]);
+    const rawMarkets = await fetchMarketsForEvents([eventId], { token });
     const marketIds = rawMarkets.map((market) => market.id);
 
-    const rawContracts = marketIds.length > 0 ? await fetchContractsForMarkets(marketIds) : [];
+    const rawContracts = marketIds.length > 0 ? await fetchContractsForMarkets(marketIds, { token }) : [];
     const contractsByMarketId = new Map<string, SmarketsContract[]>();
     for (const contract of rawContracts) {
       const siblings = contractsByMarketId.get(contract.market_id) ?? [];
@@ -41,7 +43,7 @@ export async function GET(_request: Request, { params }: RouteParams) {
       contractsByMarketId.set(contract.market_id, siblings);
     }
 
-    const rawQuotes = marketIds.length > 0 ? await fetchQuotesForMarkets(marketIds) : {};
+    const rawQuotes = marketIds.length > 0 ? await fetchQuotesForMarkets(marketIds, { token }) : {};
     const priceByContractId = new Map(
       toContractPrices(
         rawContracts.map((c) => c.id),

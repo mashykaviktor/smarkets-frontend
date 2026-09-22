@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { fetchQuotesForMarkets } from "@/server/smarkets/endpoints";
 import { isSmarketsApiError } from "@/server/smarkets/errors";
+import { getSessionToken } from "@/server/smarkets/session";
 import { toContractPrices } from "@/features/prices/adapters";
 
 function splitIds(value: string | null): string[] {
@@ -25,7 +26,8 @@ export async function GET(request: Request) {
   }
 
   try {
-    const rawQuotes = await fetchQuotesForMarkets(marketIds);
+    const token = await getSessionToken();
+    const rawQuotes = await fetchQuotesForMarkets(marketIds, { token });
     return NextResponse.json(toContractPrices(contractIds, rawQuotes));
   } catch (error) {
     if (isSmarketsApiError(error)) {

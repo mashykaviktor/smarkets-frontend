@@ -8,6 +8,9 @@ import type {
   SmarketsHomeResponse,
   SmarketsMarketsResponse,
   SmarketsQuotesResponse,
+  SmarketsSessionCredentials,
+  SmarketsSessionDeleteResponse,
+  SmarketsSessionResponse,
 } from "./types";
 
 /**
@@ -175,4 +178,30 @@ export async function fetchQuotesForMarkets(
     ),
   );
   return Object.assign({}, ...results);
+}
+
+/**
+ * POST /v3/sessions/ — no-MFA path only (per decision). `factor` in the
+ * response tells the caller whether login is actually complete; a
+ * `totp`/`nemid` factor means the token, if any, is not yet usable.
+ */
+export async function createSession(
+  credentials: SmarketsSessionCredentials,
+  ctx: RequestContext = {},
+): Promise<SmarketsSessionResponse> {
+  return smarketsRequest<SmarketsSessionResponse>({
+    path: "/v3/sessions/",
+    method: "POST",
+    body: credentials,
+    ...ctx,
+  });
+}
+
+/** DELETE /v3/sessions/ — logs out the token attached via `ctx.token`. */
+export async function deleteSession(ctx: RequestContext = {}): Promise<SmarketsSessionDeleteResponse> {
+  return smarketsRequest<SmarketsSessionDeleteResponse>({
+    path: "/v3/sessions/",
+    method: "DELETE",
+    ...ctx,
+  });
 }
