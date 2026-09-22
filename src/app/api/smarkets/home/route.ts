@@ -16,11 +16,14 @@ import { toContract, toMarket } from "@/features/markets/adapters";
 import { toContractPrices } from "@/features/prices/adapters";
 
 /**
- * Assembles the homepage feed in the 4 batched calls documented in
- * docs/implementation-plan.md §4/§5: popular/home -> events (+ one
- * parent_id call to resolve any category nodes) -> markets (one headline
- * market per event) -> contracts, joined with one quotes call. No
- * per-event or per-market fan-out.
+ * Assembles the homepage feed in a small, fixed number of batched calls:
+ * popular/home -> events -> markets (one headline market per event) ->
+ * contracts -> quotes, plus one *conditional* extra call to resolve any
+ * category nodes via parent_id. That's 5 calls when the feed has no
+ * category nodes, 6 when it does — never one per event or market, and
+ * never more regardless of how many events/markets/contracts are chunked
+ * within each stage (chunking fans out within a stage via Promise.all, not
+ * across stages). See docs/implementation-plan.md §4/§5.
  */
 export async function GET() {
   try {

@@ -8,10 +8,15 @@
 
 Approved 2026-09-21 with five corrections applied (multi-`parent_id` verified live,
 quote chunking at 200, no price filtering, auth promoted to P0, env-conditional
-cookie `secure` flag). All 9 blocks complete as of 2026-09-22 — 38 tests green,
+cookie `secure` flag). All 9 blocks complete as of 2026-09-22 — 59 tests green,
 typecheck/lint/build clean, real login verified end-to-end against the live
-API (both the failure path and a successful sign-in). See `README.md` for
-the reviewer-facing summary.
+API (both the failure path and a successful sign-in). A post-completion review
+pass on 2026-09-22 added the signup link, the "available" liquidity figure,
+a throttled price-update announcement, and fixed several doc/implementation
+mismatches (upstream call count, `sort` param, pagination) — see the diffs in
+this file and README.md for specifics; not re-tabulated as new blocks since
+the 6-hour scope was already spent. See `README.md` for the reviewer-facing
+summary.
 
 | # | Block | State |
 |---|---|---|
@@ -150,7 +155,7 @@ Rationale: `server/` is a hard boundary (never imported by client code); `featur
 
 | Route | Upstream calls | Notes |
 |---|---|---|
-| `GET /api/smarkets/home` | `popular/home` → `events/{≤300 ids}?with_new_type=true` → `events/{≤50}/markets/?limit_by_event=1` → `markets/{≤100}/contracts/` | 4 sequential batched calls, **no N+1** |
+| `GET /api/smarkets/home` | `popular/home` → `events/{≤300 ids}?with_new_type=true` → **[if any category nodes] events/?parent_id=…** → `events/{≤50}/markets/?limit_by_event=1` → `markets/{≤100}/contracts/` | 5 sequential batched calls, 6 when category resolution fires — **no N+1** |
 | `GET /api/smarkets/events/[id]` | `events/{id}?with_new_type=true` → `events/{id}/markets/` → `markets/{ids}/contracts/` | 3 calls |
 | `GET /api/smarkets/quotes?marketIds=…` | `markets/{≤200}/quotes/` **× ⌈n/200⌉** | the only polled route; one *logical* refresh, chunked |
 
@@ -180,12 +185,18 @@ popular/home                    5 sections, 25 event_ids (6 are category nodes)
    │                                       &state=upcoming&state=live
    │            VERIFIED: repeated keys, NOT comma-joined (comma → HTTP 400).
    │            ONE extra call resolved all 6 nodes → 50 bettable children.
-   │            Unauth page cap is 50; follow pagination.next_page if needed.
+   │            Unauth page cap is 50; pagination.next_page is NOT followed
+   │            (deliberate 6h-scope limitation — see §11 and README).
    ▼
  bettable leaf events
    │
-   ├─ batch GET /v3/events/{ids}/markets/?limit_by_event=1&sort=display_order
-   ▼                                        (homepage: 1 headline market per event)
+   ├─ batch GET /v3/events/{ids}/markets/?limit_by_event=1
+   ▼            (homepage: 1 headline market per event. NOTE: no `sort` param
+                 is sent — the endpoint's own default is already
+                 `event_id,display_order`, so results are display-order
+                 sorted without asking; an earlier draft of this plan named
+                 a `sort=display_order` value that isn't even the correct
+                 form the API accepts.)
  markets
    │
    ├─ batch GET /v3/markets/{ids}/contracts/
@@ -265,7 +276,7 @@ Conversions:
 - `refetchIntervalInBackground: false` and a `document.visibilityState` guard so hidden tabs stop polling — real rate-limit protection, not decoration.
 - One quotes request per page covering **all** visible markets (≤200), never per-market.
 - `placeholderData: keepPreviousData` so the grid never collapses into a skeleton mid-poll.
-- **Price movement feedback:** a `usePreviousPrice` hook diffs decimal odds between renders and applies a ~600ms subtle background tint (green up / red down) plus a small directional arrow. Restrained, exchange-like, no casino flashing. Announced politely to screen readers via a throttled `aria-live="polite"` region rather than one live region per cell.
+- **Price movement feedback:** a `usePreviousPrice` hook diffs decimal odds between renders and applies a ~600ms subtle background tint (green up / red down) plus a small directional arrow. Restrained, exchange-like, no casino flashing. This visual tint is *not* separately announced per cell (that would be unusable for a screen reader user); instead a single shared, visually-hidden `PriceUpdateAnnouncer` (`aria-live="polite"`) announces "Prices updated" once per successful poll, throttled to the same 5s/30s cadence as the poll itself.
 - On `429`, back off to 30s and surface a quiet "prices throttled" notice rather than hammering.
 
 ---
@@ -334,7 +345,7 @@ These contradict `docs/research/smarkets-research.md` and should be treated as a
 - **`CLIENT_JURISDICTION_MISMATCH` / `IP_NOT_TRUSTED` on login.** The dossier records a VPN-dependent registration; login may be similarly location-sensitive. Mapped to a clear message, not a crash.
 - **Whether `popular/home` needs a `jurisdiction` param** for stable results. It returned data without one; will pass `UKGC` if results look inconsistent.
 - **Homepage composition volatility.** The feed is live — sections may be thin at some hours. Empty states must be genuinely good, not an afterthought.
-- **Unauthenticated `limit` ceiling on `/v3/events/`** is server-controlled and undocumented; cursor pagination is handled but the page size cannot be relied upon.
+- **Unauthenticated `limit` ceiling on `/v3/events/`** is server-controlled and undocumented, and the page size cannot be relied upon. Resolved during implementation: `pagination.next_page` is typed but deliberately **not** followed for category-node resolution — see the comment on `fetchEventsByParentIds` and the README's Known limitations. Not an open uncertainty any more, but a scope decision worth flagging here since an earlier draft of this plan implied pagination would be handled.
 
 ### Deliberately excluded (6-hour constraint)
 WebSocket/realtime transport · order placement or any write operation to the exchange · `last_executed_prices`, volumes, cash-out, multiples, each-way · full navigation tree / category browse pages · Redux · Storybook · React Compiler · Docker · Sentry · a large design system · Playwright E2E · sophisticated CI/CD · dark mode (light-first per CLAUDE.md) · account/balance/portfolio screens.

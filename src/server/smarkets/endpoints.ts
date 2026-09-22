@@ -97,9 +97,15 @@ export interface FetchEventsByParentIdsOptions extends RequestContext {
 /**
  * GET /v3/events/?parent_id=...&type_scope=single_event — resolves category
  * nodes (`type.scope === "category"`) to their bettable leaf events. A
- * single call with all parent ids repeated resolves every node at once;
- * `pagination.next_page` is returned as-is for the caller to follow if the
- * unauthenticated 50-per-page cap is hit.
+ * single call with all parent ids repeated resolves every node at once.
+ *
+ * `pagination.next_page` is typed and returned but deliberately NOT
+ * followed — only the first (unauthenticated, 50-per-page-capped) page is
+ * consumed. In the verified sample, 6 category nodes resolved to 50
+ * children in one call, right at the cap; a homepage with more category
+ * nodes or deeper category trees could silently truncate. Accepted as a
+ * six-hour-scope limitation rather than adding cursor-following complexity
+ * for a homepage that's capped to 8 events per section anyway.
  */
 export async function fetchEventsByParentIds(
   parentIds: readonly string[],
