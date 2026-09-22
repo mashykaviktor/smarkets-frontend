@@ -18,7 +18,7 @@ cookie `secure` flag).
 | 3 | Homepage | ☑ done |
 | 4 | Event page | ☑ done |
 | 5 | Price refresh | ☑ done |
-| 6 | Auth ⭐ protected (P0) | ☐ not started |
+| 6 | Auth ⭐ protected (P0) | ☑ done |
 | 7 | Polish pass ⭐ protected | ☐ not started |
 | 8 | Component tests + README | ☐ not started |
 

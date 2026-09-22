@@ -8,6 +8,7 @@ import {
   fetchQuotesForMarkets,
 } from "@/server/smarkets/endpoints";
 import { isSmarketsApiError } from "@/server/smarkets/errors";
+import { getSessionToken } from "@/server/smarkets/session";
 import type { SmarketsContract, SmarketsEvent } from "@/server/smarkets/types";
 import { buildHomeSections } from "@/features/home/adapters";
 import type { HomeResponse } from "@/features/home/types";
@@ -23,18 +24,19 @@ import { toContractPrices } from "@/features/prices/adapters";
  */
 export async function GET() {
   try {
-    const home = await fetchPopularHome();
+    const token = await getSessionToken();
+    const home = await fetchPopularHome({ token });
 
     const allEventIds = Array.from(
       new Set(home.home.flatMap((section) => section.events.map((ref) => ref.event_id))),
     );
-    const events = allEventIds.length > 0 ? await fetchEventsByIds(allEventIds) : [];
+    const events = allEventIds.length > 0 ? await fetchEventsByIds(allEventIds, { token }) : [];
     const eventsById = new Map(events.map((event) => [event.id, event]));
 
     const categoryIds = events.filter((event) => event.type.scope === "category").map((event) => event.id);
     const childrenByParentId = new Map<string, SmarketsEvent[]>();
     if (categoryIds.length > 0) {
-      const childrenPage = await fetchEventsByParentIds(categoryIds);
+      const childrenPage = await fetchEventsByParentIds(categoryIds, { token });
       for (const child of childrenPage.events) {
         if (!child.parent_id) continue;
         const siblings = childrenByParentId.get(child.parent_id) ?? [];
@@ -48,12 +50,12 @@ export async function GET() {
 
     const rawMarkets =
       sectionEventIds.length > 0
-        ? await fetchMarketsForEvents(sectionEventIds, { limitByEvent: 1 })
+        ? await fetchMarketsForEvents(sectionEventIds, { limitByEvent: 1, token })
         : [];
     const marketByEventId = new Map(rawMarkets.map((market) => [market.event_id, market]));
     const marketIds = rawMarkets.map((market) => market.id);
 
-    const rawContracts = marketIds.length > 0 ? await fetchContractsForMarkets(marketIds) : [];
+    const rawContracts = marketIds.length > 0 ? await fetchContractsForMarkets(marketIds, { token }) : [];
     const contractsByMarketId = new Map<string, SmarketsContract[]>();
     for (const contract of rawContracts) {
       const siblings = contractsByMarketId.get(contract.market_id) ?? [];
@@ -61,7 +63,7 @@ export async function GET() {
       contractsByMarketId.set(contract.market_id, siblings);
     }
 
-    const rawQuotes = marketIds.length > 0 ? await fetchQuotesForMarkets(marketIds) : {};
+    const rawQuotes = marketIds.length > 0 ? await fetchQuotesForMarkets(marketIds, { token }) : {};
     const priceByContractId = new Map(
       toContractPrices(
         rawContracts.map((c) => c.id),
