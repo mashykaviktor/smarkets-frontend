@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -7,7 +8,10 @@ import { ErrorState } from "@/components/ui/ErrorState";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { ApiRequestError } from "@/lib/apiClient";
 import { useEventQuery } from "@/features/events/queries";
+import { applyLivePrices } from "@/features/markets/adapters";
 import { MarketList } from "@/features/markets/components/MarketList";
+import { ThrottledNotice } from "@/features/prices/components/ThrottledNotice";
+import { usePriceRefresh } from "@/features/prices/usePriceRefresh";
 import { EventHeader } from "./EventHeader";
 
 interface EventDetailProps {
@@ -16,6 +20,15 @@ interface EventDetailProps {
 
 export function EventDetail({ eventId }: EventDetailProps) {
   const { data, isPending, isError, error, refetch } = useEventQuery(eventId);
+
+  const { marketIds, contractIds } = useMemo(() => {
+    if (!data) return { marketIds: [], contractIds: [] };
+    return {
+      marketIds: data.markets.map((m) => m.market.id),
+      contractIds: data.markets.flatMap((m) => m.contracts.map((c) => c.id)),
+    };
+  }, [data]);
+  const { prices, isThrottled } = usePriceRefresh(marketIds, contractIds);
 
   if (isPending) {
     return (
@@ -33,6 +46,8 @@ export function EventDetail({ eventId }: EventDetailProps) {
     return <ErrorState message="Couldn't load this event." onRetry={() => refetch()} />;
   }
 
+  const liveMarkets = data.markets.map((market) => applyLivePrices(market, prices));
+
   return (
     <div className="flex flex-col gap-6">
       <Link
@@ -43,7 +58,8 @@ export function EventDetail({ eventId }: EventDetailProps) {
         All events
       </Link>
       <EventHeader event={data.event} />
-      <MarketList markets={data.markets} />
+      <ThrottledNotice isThrottled={isThrottled} />
+      <MarketList markets={liveMarkets} />
     </div>
   );
 }

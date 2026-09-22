@@ -1,6 +1,8 @@
 import type { SmarketsEvent, SmarketsHomeSection } from "@/server/smarkets/types";
 import { toEvent } from "@/features/events/adapters";
-import type { Event } from "@/domain/models";
+import { applyLivePrices } from "@/features/markets/adapters";
+import type { ContractPrice, Event } from "@/domain/models";
+import type { HomeResponse, HomeSection } from "./types";
 
 const CATEGORY_SCOPE = "category";
 const MAX_EVENTS_PER_SECTION = 8;
@@ -62,4 +64,44 @@ export function buildHomeSections(
       events: resolved.map(toEvent),
     };
   });
+}
+
+/** Every distinct market/contract id currently rendered — what the poll needs to cover. */
+export function collectMarketAndContractIds(sections: readonly HomeSection[]): {
+  marketIds: string[];
+  contractIds: string[];
+} {
+  const marketIds = new Set<string>();
+  const contractIds = new Set<string>();
+
+  for (const section of sections) {
+    for (const { market } of section.events) {
+      if (!market) continue;
+      marketIds.add(market.market.id);
+      for (const contract of market.contracts) {
+        contractIds.add(contract.id);
+      }
+    }
+  }
+
+  return { marketIds: [...marketIds], contractIds: [...contractIds] };
+}
+
+export function applyLivePricesToHome(
+  data: HomeResponse,
+  livePrices: readonly ContractPrice[] | undefined,
+): HomeResponse {
+  if (!livePrices) {
+    return data;
+  }
+
+  return {
+    sections: data.sections.map((section) => ({
+      ...section,
+      events: section.events.map((summary) => ({
+        ...summary,
+        market: summary.market ? applyLivePrices(summary.market, livePrices) : null,
+      })),
+    })),
+  };
 }
