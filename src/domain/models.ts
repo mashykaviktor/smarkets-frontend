@@ -37,7 +37,14 @@ export interface Contract {
 export interface Side {
   decimalOdds: number;
   priceBp: number;
-  /** GBP stake available at this price. */
+  /**
+   * GBP value of the matched-pot quantity at this price level, per the
+   * spec's back-stake conversion (`quantity * priceBp / 100_000_000`) —
+   * the OpenAPI quote schema documents this identical formula for both
+   * `bids` and `offers` ticks, so it's valid for back and lay alike.
+   * Displayed as "Available", not "stake": it's liquidity at the level,
+   * not the user's own risk/liability if they were to trade against it.
+   */
   stake: number;
 }
 

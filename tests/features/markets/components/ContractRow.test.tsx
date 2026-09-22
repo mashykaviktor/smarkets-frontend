@@ -21,6 +21,22 @@ describe("ContractRow", () => {
     expect(screen.getByText("2.64")).toBeInTheDocument();
   });
 
+  it("shows the available amount alongside odds for both back and lay, never as a mislabeled shared 'stake'", () => {
+    const price: ContractPrice = {
+      contractId: "c1",
+      back: { decimalOdds: 2.48, priceBp: 4032, stake: 10 },
+      lay: { decimalOdds: 2.64, priceBp: 3788, stake: 20 },
+      hasPrice: true,
+    };
+
+    render(<ContractRow contract={CONTRACT} price={price} />);
+
+    expect(screen.getByText("£10")).toBeInTheDocument();
+    expect(screen.getByText("£20")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /back .* at 2\.48, £10 available/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /lay .* at 2\.64, £20 available/i })).toBeInTheDocument();
+  });
+
   it('renders "—" for a side with no liquidity, not NaN/Infinity/blank', () => {
     const price: ContractPrice = { contractId: "c1", back: null, lay: null, hasPrice: false };
 

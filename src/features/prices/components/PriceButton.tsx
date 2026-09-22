@@ -2,7 +2,7 @@
 
 import { ArrowDown, ArrowUp } from "lucide-react";
 import type { Side } from "@/domain/models";
-import { formatOdds } from "@/lib/format";
+import { formatOdds, formatStake } from "@/lib/format";
 import { usePreviousPrice } from "@/features/prices/usePreviousPrice";
 
 interface PriceButtonProps {
@@ -35,7 +35,7 @@ export function PriceButton({ side, label, contractName }: PriceButtonProps) {
     return (
       <span
         aria-label={`${label} price unavailable for ${contractName}`}
-        className="flex h-11 w-20 items-center justify-center rounded-md border border-zinc-200 bg-zinc-50 text-sm text-zinc-500"
+        className="flex h-12 w-20 items-center justify-center rounded-md border border-zinc-200 bg-zinc-50 text-sm text-zinc-500"
       >
         —
       </span>
@@ -45,12 +45,17 @@ export function PriceButton({ side, label, contractName }: PriceButtonProps) {
   return (
     <button
       type="button"
-      aria-label={`${label} ${contractName} at ${formatOdds(side.decimalOdds)}`}
-      className={`flex h-11 w-20 items-center justify-center gap-0.5 rounded-md text-sm font-semibold tabular-nums transition-colors duration-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${TONE_CLASSES[label]} ${direction ? DIRECTION_RING[direction] : ""}`}
+      aria-label={`${label} ${contractName} at ${formatOdds(side.decimalOdds)}, ${formatStake(side.stake)} available`}
+      className={`flex h-12 w-20 flex-col items-center justify-center gap-0 rounded-md text-sm font-semibold tabular-nums transition-colors duration-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${TONE_CLASSES[label]} ${direction ? DIRECTION_RING[direction] : ""}`}
     >
-      {direction === "up" && <ArrowUp className="h-3 w-3 text-emerald-600" aria-hidden="true" />}
-      {direction === "down" && <ArrowDown className="h-3 w-3 text-red-600" aria-hidden="true" />}
-      {formatOdds(side.decimalOdds)}
+      <span className="flex items-center gap-0.5">
+        {direction === "up" && <ArrowUp className="h-3 w-3 text-emerald-600" aria-hidden="true" />}
+        {direction === "down" && <ArrowDown className="h-3 w-3 text-red-600" aria-hidden="true" />}
+        {formatOdds(side.decimalOdds)}
+      </span>
+      <span className="text-[10px] font-normal leading-none opacity-70" aria-hidden="true">
+        {formatStake(side.stake)}
+      </span>
     </button>
   );
 }

@@ -23,7 +23,10 @@ export function toDecimalOdds(priceBp: number): number | null {
 /**
  * quantity is 1/100 of a UK penny. Back stake (GBP) = quantity * priceBp /
  * 100_000_000 — the spec's own worked example: 100000 * 5000 / 100000000 =
- * £5.
+ * £5. The OpenAPI quote schema documents this exact conversion identically
+ * for both `bids` and `offers` ticks, so callers may apply it uniformly to
+ * back and lay levels — it's the level's available GBP value either way,
+ * not something valid for the back side only.
  */
 export function toBackStake(quantity: number, priceBp: number): number {
   return (quantity * priceBp) / 100_000_000;
