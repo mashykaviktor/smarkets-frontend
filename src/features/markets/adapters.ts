@@ -36,13 +36,14 @@ export function applyLivePrices(
   }
 
   const liveByContractId = new Map(livePrices.map((price) => [price.contractId, price]));
+  const structuralByContractId = new Map(summary.prices.map((price) => [price.contractId, price]));
 
   return {
     ...summary,
     prices: summary.contracts.map(
       (contract) =>
         liveByContractId.get(contract.id) ??
-        summary.prices.find((price) => price.contractId === contract.id) ?? {
+        structuralByContractId.get(contract.id) ?? {
           contractId: contract.id,
           back: null,
           lay: null,

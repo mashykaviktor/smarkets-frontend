@@ -11,11 +11,12 @@ export function MarketPriceStrip({ market, maxContracts }: MarketPriceStripProps
   const contracts =
     maxContracts !== undefined ? market.contracts.slice(0, maxContracts) : market.contracts;
   const hiddenCount = market.contracts.length - contracts.length;
+  const priceByContractId = new Map(market.prices.map((price) => [price.contractId, price]));
 
   return (
     <div className="flex flex-col divide-y divide-zinc-100 border-t border-zinc-100">
       {contracts.map((contract) => {
-        const price = market.prices.find((p) => p.contractId === contract.id) ?? {
+        const price = priceByContractId.get(contract.id) ?? {
           contractId: contract.id,
           back: null,
           lay: null,
