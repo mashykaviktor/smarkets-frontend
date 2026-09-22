@@ -8,7 +8,10 @@
 
 Approved 2026-09-21 with five corrections applied (multi-`parent_id` verified live,
 quote chunking at 200, no price filtering, auth promoted to P0, env-conditional
-cookie `secure` flag).
+cookie `secure` flag). All 9 blocks complete as of 2026-09-22 — 38 tests green,
+typecheck/lint/build clean. See `README.md` for the reviewer-facing summary,
+including known limitations (real login was not end-to-end verified — no live
+credentials were available).
 
 | # | Block | State |
 |---|---|---|
@@ -20,7 +23,7 @@ cookie `secure` flag).
 | 5 | Price refresh | ☑ done |
 | 6 | Auth ⭐ protected (P0) | ☑ done |
 | 7 | Polish pass ⭐ protected | ☑ done |
-| 8 | Component tests + README | ☐ not started |
+| 8 | Component tests + README | ☑ done |
 
 ## Context
 
