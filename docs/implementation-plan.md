@@ -9,9 +9,9 @@
 Approved 2026-09-21 with five corrections applied (multi-`parent_id` verified live,
 quote chunking at 200, no price filtering, auth promoted to P0, env-conditional
 cookie `secure` flag). All 9 blocks complete as of 2026-09-22 — 38 tests green,
-typecheck/lint/build clean. See `README.md` for the reviewer-facing summary,
-including known limitations (real login was not end-to-end verified — no live
-credentials were available).
+typecheck/lint/build clean, real login verified end-to-end against the live
+API (both the failure path and a successful sign-in). See `README.md` for
+the reviewer-facing summary.
 
 | # | Block | State |
 |---|---|---|

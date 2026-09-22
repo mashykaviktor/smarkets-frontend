@@ -19,5 +19,8 @@ export default defineConfig({
     environment: "happy-dom",
     globals: true,
     setupFiles: ["./tests/setup.ts"],
+    // Restrict to tests/ so Vitest's default *.spec.ts glob doesn't also
+    // pick up e2e/*.spec.ts (Playwright specs, a different test runner).
+    include: ["tests/**/*.{test,spec}.{ts,tsx}"],
   },
 });

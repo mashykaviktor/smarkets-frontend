@@ -23,6 +23,7 @@ npm run typecheck   # tsc --noEmit
 npm run lint         # eslint
 npm test             # vitest run — 38 tests
 npm run build         # production build
+npm run test:e2e      # playwright test — needs `npx playwright install chromium` once
 ```
 
 ## Architecture
@@ -102,7 +103,11 @@ src/
   (the browser drops a Secure cookie over HTTP with no visible error). MFA
   (`factor: totp`) is rejected with an explicit message, not a crash. The app
   is fully usable logged out, since quotes turned out not to be auth-gated
-  (see below) — login is a price-quality upgrade, not a gate.
+  (see below) — login is a price-quality upgrade, not a gate. Both the
+  failure path (wrong credentials → friendly error, no cookie set) and a
+  real successful login (cookie stored, header flips to "Live prices") were
+  verified end-to-end against the live API; login is rate-limited to 5
+  requests/300s, so this wasn't looped.
 - **Price refresh is polling, not a socket.** `refetchInterval: 5s` on a
   single quotes query per page (chunked, never per-market), backing off to
   30s and surfacing a quiet notice on a `429`. The transport is isolated to
@@ -144,19 +149,23 @@ Vitest + React Testing Library, 38 tests, prioritized by risk:
    ticks), `EventCard` (links to the right event), `ErrorState` (retry
    fires), `LoginForm` (server error surfaces, success navigates).
 
-No Playwright — manual/browser QA (Chrome DevTools + Playwright MCP) was used
-instead to verify against the live API at 375/768/1280px, keyboard focus
-order, and console-clean polling over several cycles, in the time available.
+**Playwright E2E** (`e2e/`, `npm run test:e2e`) covers the three critical
+flows against a real running app: the homepage renders a live event
+(`home.spec.ts`), clicking through to an event page shows its markets and a
+non-existent event shows a clean not-found state (`event.spec.ts`), and the
+login form surfaces a server error / navigates home on success
+(`login.spec.ts`). The homepage/event specs hit the real Smarkets API,
+matching this project's "verify against live, don't mock" approach
+throughout; `login.spec.ts` mocks the app's own `/api/smarkets/session`
+route instead, since the real endpoint is rate-limited to 5 requests/300s
+and shouldn't be hit on every CI run — the real login flow (failure and
+success) was verified manually against the live API instead (see the Auth
+bullet above). Manual/browser QA (Chrome DevTools + Playwright MCP) was
+additionally used throughout development to check 375/768/1280px layouts,
+keyboard focus order, and console-clean polling over several cycles.
 
 ## Known limitations / future improvements
 
-- **A real successful login was not verified end-to-end.** This repo ships
-  with empty credential placeholders in `.env.example`/`.env.local` and no
-  live Smarkets account was available during development. The failure path
-  (wrong credentials → friendly error, no cookie set) **was** verified
-  against the live API; login is rate-limited to 5 requests/300s, so this
-  wasn't looped. Worth a manual check with real credentials before treating
-  auth as fully proven.
 - **How "delayed" the delayed prices actually are** is unquantified by the
   spec and wasn't measured precisely — logged-out users see *some* real
   book, but the exact staleness window is unknown.
@@ -168,8 +177,12 @@ order, and console-clean polling over several cycles, in the time available.
   contracts** to keep the grid readable (a resolved category node can expand
   to 50+ children; a real market had 40 candidates) — the event page shows
   every market and every contract, uncapped.
-- **No Storybook, no design system, no CI** — deliberately not carried over
-  from prior take-home infrastructure per the brief's scope.
+- **No Storybook, no design system** — deliberately not carried over from
+  prior take-home infrastructure per the brief's scope. A lightweight CI
+  (`.github/workflows/ci.yml`) *was* added: typecheck/lint/unit
+  tests/build gate every push and PR, with the Playwright E2E suite as a
+  separate, non-blocking job (`continue-on-error`) since two of its three
+  specs depend on the live Smarkets API being reachable from the runner.
 
 ## Biggest challenges
 
