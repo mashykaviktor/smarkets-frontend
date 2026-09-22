@@ -24,7 +24,7 @@ export function MarketPriceStrip({ market, maxContracts }: MarketPriceStripProps
         return <ContractRow key={contract.id} contract={contract} price={price} />;
       })}
       {hiddenCount > 0 && (
-        <p className="py-2 text-xs text-zinc-400">+{hiddenCount} more selections</p>
+        <p className="py-2 text-xs text-zinc-500">+{hiddenCount} more selections</p>
       )}
     </div>
   );

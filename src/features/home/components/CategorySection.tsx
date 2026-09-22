@@ -13,7 +13,7 @@ export function CategorySection({ section }: CategorySectionProps) {
 
   return (
     <Section title={sectionTitle(section.name)}>
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <div className="grid items-start gap-3 [grid-template-columns:repeat(auto-fill,minmax(320px,1fr))]">
         {section.events.map(({ event, market }) => (
           <EventCard key={event.id} event={event} market={market} />
         ))}

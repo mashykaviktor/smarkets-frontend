@@ -31,7 +31,7 @@ export function EventCard({ event, market }: EventCardProps) {
           <MarketPriceStrip market={market} maxContracts={6} />
         </div>
       ) : (
-        <p className="px-3 pb-3 text-xs text-zinc-400">No markets available.</p>
+        <p className="px-3 pb-3 text-xs text-zinc-500">No markets available.</p>
       )}
     </Card>
   );
