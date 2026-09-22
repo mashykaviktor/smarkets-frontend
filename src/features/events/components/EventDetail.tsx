@@ -10,6 +10,7 @@ import { ApiRequestError } from "@/lib/apiClient";
 import { useEventQuery } from "@/features/events/queries";
 import { applyLivePrices } from "@/features/markets/adapters";
 import { MarketList } from "@/features/markets/components/MarketList";
+import { PriceUpdateAnnouncer } from "@/features/prices/components/PriceUpdateAnnouncer";
 import { ThrottledNotice } from "@/features/prices/components/ThrottledNotice";
 import { usePriceRefresh } from "@/features/prices/usePriceRefresh";
 import { EventHeader } from "./EventHeader";
@@ -28,7 +29,7 @@ export function EventDetail({ eventId }: EventDetailProps) {
       contractIds: data.markets.flatMap((m) => m.contracts.map((c) => c.id)),
     };
   }, [data]);
-  const { prices, isThrottled } = usePriceRefresh(marketIds, contractIds);
+  const { prices, isThrottled, dataUpdatedAt } = usePriceRefresh(marketIds, contractIds);
 
   if (isPending) {
     return (
@@ -58,6 +59,7 @@ export function EventDetail({ eventId }: EventDetailProps) {
         All events
       </Link>
       <EventHeader event={data.event} />
+      <PriceUpdateAnnouncer updatedAt={dataUpdatedAt} />
       <ThrottledNotice isThrottled={isThrottled} />
       <MarketList markets={liveMarkets} />
     </div>

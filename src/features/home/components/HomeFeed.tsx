@@ -6,6 +6,7 @@ import { ErrorState } from "@/components/ui/ErrorState";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { applyLivePricesToHome, collectMarketAndContractIds } from "@/features/home/adapters";
 import { useHomeQuery } from "@/features/home/queries";
+import { PriceUpdateAnnouncer } from "@/features/prices/components/PriceUpdateAnnouncer";
 import { ThrottledNotice } from "@/features/prices/components/ThrottledNotice";
 import { usePriceRefresh } from "@/features/prices/usePriceRefresh";
 import { CategorySection } from "./CategorySection";
@@ -17,7 +18,7 @@ export function HomeFeed() {
     () => (data ? collectMarketAndContractIds(data.sections) : { marketIds: [], contractIds: [] }),
     [data],
   );
-  const { prices, isThrottled } = usePriceRefresh(marketIds, contractIds);
+  const { prices, isThrottled, dataUpdatedAt } = usePriceRefresh(marketIds, contractIds);
 
   if (isPending) {
     return (
@@ -41,6 +42,7 @@ export function HomeFeed() {
 
   return (
     <div className="flex flex-col gap-4">
+      <PriceUpdateAnnouncer updatedAt={dataUpdatedAt} />
       <ThrottledNotice isThrottled={isThrottled} />
       <div className="flex flex-col gap-8">
         {liveData.sections.map((section) => (
