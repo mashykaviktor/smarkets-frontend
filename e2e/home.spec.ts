@@ -16,6 +16,15 @@ test.describe("Homepage", () => {
     const eventLinks = page.locator('a[href^="/events/"]');
     await expect(eventLinks.first()).toBeVisible({ timeout: 15_000 });
     expect(await eventLinks.count()).toBeGreaterThan(0);
+
+    // A priced contract, not just an event link — proves the homepage's
+    // markets/contracts/quotes batch actually populated, not only the
+    // events list. PriceButton's accessible name always starts with
+    // "Back "/"Lay " when that side has liquidity — stable regardless of
+    // which live event/contract it is.
+    await expect(
+      page.getByRole("button", { name: /^(Back|Lay) /i }).first(),
+    ).toBeVisible({ timeout: 15_000 });
   });
 
   test("renders at least one section heading", async ({ page }) => {
