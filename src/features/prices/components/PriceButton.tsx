@@ -35,7 +35,7 @@ export function PriceButton({ side, label, contractName }: PriceButtonProps) {
     return (
       <span
         aria-label={`${label} price unavailable for ${contractName}`}
-        className="flex h-11 w-20 items-center justify-center rounded-md border border-zinc-200 bg-zinc-50 text-sm text-zinc-400"
+        className="flex h-11 w-20 items-center justify-center rounded-md border border-zinc-200 bg-zinc-50 text-sm text-zinc-500"
       >
         —
       </span>

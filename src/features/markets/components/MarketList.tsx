@@ -12,7 +12,7 @@ export function MarketList({ markets }: MarketListProps) {
   }
 
   return (
-    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+    <div className="grid items-start gap-3 [grid-template-columns:repeat(auto-fill,minmax(320px,1fr))]">
       {markets.map((summary) => (
         <MarketCard key={summary.market.id} summary={summary} />
       ))}
