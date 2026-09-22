@@ -7,7 +7,10 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
-  reporter: "list",
+  // "list" alone never writes a playwright-report/ dir, so CI's
+  // upload-artifact step had nothing to pick up — add the "html" reporter
+  // there so a failure is actually inspectable from the workflow run.
+  reporter: process.env.CI ? [["list"], ["html", { open: "never" }]] : "list",
   use: {
     baseURL: `http://localhost:${PORT}`,
     trace: "on-first-retry",
