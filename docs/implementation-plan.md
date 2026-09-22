@@ -322,7 +322,7 @@ Vitest + React Testing Library. Priority order, highest value first:
 5. **Component tests** — `ContractRow` renders odds; renders "—" with no liquidity; renders extreme-but-valid ticks (`1` → `10000.0`, `9999` → `1.00`) without hiding them; `ErrorState` retry fires refetch; `EventCard` links to the right href.
 6. **Interaction** — login form validation and error-message surfacing with a mocked route handler.
 
-Fixtures are captured from the **real** responses recorded during this planning session, saved at `docs/research/api-samples/*.json` (popular-home, event-single/batch, markets-single/batch, contracts-single/batch, quotes-single/batch, events-children-by-parent), so tests assert against genuine payload shapes rather than invented ones. No Playwright unless everything else is done and polished.
+Fixtures are captured from the **real** responses recorded during this planning session, saved at `docs/research/api-samples/*.json` (popular-home, event-single/batch, markets-single/batch, contracts-single/batch, quotes-single/batch, events-children-by-parent), so tests assert against genuine payload shapes rather than invented ones. Playwright was planned as conditional on everything else being done and polished first — it was ultimately added once the core was complete; see README.md's Testing section for the final E2E coverage.
 
 ---
 
@@ -348,7 +348,9 @@ These contradict `docs/research/smarkets-research.md` and should be treated as a
 - **Unauthenticated `limit` ceiling on `/v3/events/`** is server-controlled and undocumented, and the page size cannot be relied upon. Resolved during implementation: `pagination.next_page` is typed but deliberately **not** followed for category-node resolution — see the comment on `fetchEventsByParentIds` and the README's Known limitations. Not an open uncertainty any more, but a scope decision worth flagging here since an earlier draft of this plan implied pagination would be handled.
 
 ### Deliberately excluded (6-hour constraint)
-WebSocket/realtime transport · order placement or any write operation to the exchange · `last_executed_prices`, volumes, cash-out, multiples, each-way · full navigation tree / category browse pages · Redux · Storybook · React Compiler · Docker · Sentry · a large design system · Playwright E2E · sophisticated CI/CD · dark mode (light-first per CLAUDE.md) · account/balance/portfolio screens.
+WebSocket/realtime transport · order placement or any write operation to the exchange · `last_executed_prices`, volumes, cash-out, multiples, each-way · full navigation tree / category browse pages · Redux · Storybook · React Compiler · Docker · Sentry · a large design system · dark mode (light-first per CLAUDE.md) · account/balance/portfolio screens.
+
+Playwright E2E was originally planned as conditional/optional (see §10) but was ultimately implemented once the core work was complete, with CI running it as a separate non-blocking job — see README.md's Testing section and Known limitations.
 
 ---
 

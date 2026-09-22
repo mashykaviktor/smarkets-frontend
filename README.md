@@ -108,16 +108,15 @@ src/
   `bids`/`offers` and a contract with no quote entry both resolve to
   `hasPrice: false`, rendered as a disabled "—", never `NaN`/blank.
 - **Available amount, not "stake".** Each price button shows a small GBP
-  figure next to the odds (`£245`, converted via the spec's own
-  `quantity * priceBp / 100_000_000` formula). The OpenAPI quote schema
-  documents that exact conversion identically — byte-for-byte, diffed
-  programmatically — for both `bids` and `offers` ticks, so it's
-  spec-justified uniformly for back and lay, not invented. It's still
-  labelled "available" (in the button's `aria-label`), not "stake": the
-  spec's separate `/v3/markets/{ids}/volumes/` endpoint treats "back
-  stake" and "liability" as two distinct, summed quantities, so this
-  figure is deliberately framed as level depth, never as one side's
-  specific risk/liability.
+  figure next to the odds (`£245`). The displayed amount uses the
+  `quantity`/`price` conversion documented by the API
+  (`quantity * priceBp / 100_000_000`), applied the same way to both
+  `bids` and `offers` ticks, and is presented as available level depth
+  rather than as the user's own stake or liability — it's labelled
+  "available" (in the button's `aria-label`), not "stake". The spec's
+  separate `/v3/markets/{ids}/volumes/` endpoint treats "back stake" and
+  "liability" as two distinct, summed quantities, so no claim is made here
+  about which side bears what financial risk.
 - **The join direction matters.** Quotes can include keys for contracts
   absent from the contracts endpoint (verified: 208 quote keys vs 133
   contracts for the same 19 markets). `toContractPrices` iterates contracts

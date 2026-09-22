@@ -25,7 +25,9 @@ function toIdList(value: unknown): string[] {
  * uncapped (per the brief's "more available markets" requirement), so
  * `contractIds` has no upper bound. A GET query string risks the ~8-16KB
  * header-size ceiling most servers/proxies enforce for a large event; a
- * JSON body has no such limit. `contractIds` still has to be sent
+ * JSON body avoids that URL/header-length limitation (ordinary
+ * server/framework body-size limits still apply, just at a much higher
+ * ceiling). `contractIds` still has to be sent
  * explicitly (not derived from the quotes response's own keys) to
  * preserve the join-direction invariant in `toContractPrices` — quotes
  * can include keys for contracts that don't exist, and iterating those
