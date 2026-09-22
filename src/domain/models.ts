@@ -40,10 +40,17 @@ export interface Side {
   /**
    * GBP value of the matched-pot quantity at this price level, per the
    * spec's back-stake conversion (`quantity * priceBp / 100_000_000`) —
-   * the OpenAPI quote schema documents this identical formula for both
-   * `bids` and `offers` ticks, so it's valid for back and lay alike.
-   * Displayed as "Available", not "stake": it's liquidity at the level,
-   * not the user's own risk/liability if they were to trade against it.
+   * the OpenAPI quote schema documents this identical formula, verbatim,
+   * for both `bids` and `offers` ticks (diffed programmatically: byte-for-
+   * byte identical descriptions), so it's spec-justified for back and lay
+   * alike as a level-size/depth figure, not an invented conversion.
+   *
+   * It is NOT the same thing as lay liability. The spec's separate
+   * `/v3/markets/{ids}/volumes/` endpoint explicitly treats "back stake"
+   * and "liability" as two different, summed quantities ("the sum of back
+   * stake (on the back side) with liability (on the lay side)") — so this
+   * field is deliberately displayed as "Available" in the UI, never
+   * "stake" or "liability", to avoid implying a specific side's risk.
    */
   stake: number;
 }
