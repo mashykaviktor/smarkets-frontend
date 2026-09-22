@@ -157,7 +157,7 @@ Rationale: `server/` is a hard boundary (never imported by client code); `featur
 |---|---|---|
 | `GET /api/smarkets/home` | `popular/home` → `events/{≤300 ids}?with_new_type=true` → **[if any category nodes] events/?parent_id=…** → `events/{≤50}/markets/?limit_by_event=1` → `markets/{≤100}/contracts/` | 5 sequential batched calls, 6 when category resolution fires — **no N+1** |
 | `GET /api/smarkets/events/[id]` | `events/{id}?with_new_type=true` → `events/{id}/markets/` → `markets/{ids}/contracts/` | 3 calls |
-| `GET /api/smarkets/quotes?marketIds=…` | `markets/{≤200}/quotes/` **× ⌈n/200⌉** | the only polled route; one *logical* refresh, chunked |
+| `POST /api/smarkets/quotes` `{marketIds, contractIds}` | `markets/{≤200}/quotes/` **× ⌈n/200⌉** | the only polled route; one *logical* refresh, chunked. POST, not GET, since the event page's `contractIds` is uncapped and a query string risks header-size limits |
 
 Rules enforced in `endpoints.ts`:
 - Always pass `with_new_type=true` so `type.scope` is available (the legacy string enum cannot distinguish a category from a match).
