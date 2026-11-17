@@ -40,4 +40,16 @@ describe("toBackStake", () => {
   it("returns 0 stake for 0 quantity", () => {
     expect(toBackStake(0, 5000)).toBe(0);
   });
+
+  it("returns 0 for a negative or non-finite quantity instead of a misleading amount", () => {
+    expect(toBackStake(-100_000, 5000)).toBe(0);
+    expect(toBackStake(Number.NaN, 5000)).toBe(0);
+    expect(toBackStake(Number.POSITIVE_INFINITY, 5000)).toBe(0);
+  });
+
+  it("returns 0 when the price is outside the valid tick range", () => {
+    expect(toBackStake(100_000, 0)).toBe(0);
+    expect(toBackStake(100_000, 10000)).toBe(0);
+    expect(toBackStake(100_000, Number.NaN)).toBe(0);
+  });
 });

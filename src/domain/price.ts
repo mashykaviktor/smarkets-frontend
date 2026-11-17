@@ -30,5 +30,17 @@ export function toDecimalOdds(priceBp: number): number | null {
  * in README.md.
  */
 export function toBackStake(quantity: number, priceBp: number): number {
+  // Same guard as toDecimalOdds: a malformed level must never render as a
+  // negative or NaN "available" amount. Depth outside the valid range is
+  // shown as 0 available rather than a misleading number.
+  if (
+    !Number.isFinite(quantity) ||
+    quantity < 0 ||
+    !Number.isFinite(priceBp) ||
+    priceBp < MIN_PRICE_BP ||
+    priceBp > MAX_PRICE_BP
+  ) {
+    return 0;
+  }
   return (quantity * priceBp) / 100_000_000;
 }
