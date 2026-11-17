@@ -14,7 +14,9 @@ function bestLevel(
     return null;
   }
   return levels.reduce((best, level) =>
-    (pick === "lowest" ? level.price < best.price : level.price > best.price) ? level : best,
+    (pick === "lowest" ? level.price < best.price : level.price > best.price)
+      ? level
+      : best,
   );
 }
 
@@ -50,7 +52,7 @@ export function toContractPrice(
   contractId: string,
   quote: SmarketsQuote | undefined,
 ): ContractPrice {
-  const back = toSide(bestLevel(quote?.offers ?? [], "lowest"));
+  const back = toSide(bestLevel(quote?.offers ?? [], "highest"));
   const lay = toSide(bestLevel(quote?.bids ?? [], "highest"));
 
   return {
@@ -72,5 +74,7 @@ export function toContractPrices(
   contractIds: readonly string[],
   quotes: SmarketsQuotesResponse,
 ): ContractPrice[] {
-  return contractIds.map((contractId) => toContractPrice(contractId, quotes[contractId]));
+  return contractIds.map((contractId) =>
+    toContractPrice(contractId, quotes[contractId]),
+  );
 }
